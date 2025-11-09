@@ -1,0 +1,3 @@
+strands-agents
+bedrock-agentcore
+strands-agents-tools
