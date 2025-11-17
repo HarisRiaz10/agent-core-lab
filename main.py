@@ -16,17 +16,16 @@ from bedrock_agentcore.memory.integrations.strands.session_manager import AgentC
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
 
 app = BedrockAgentCoreApp()
-S3_BUCKET = "<your-s3-bucket-name>"
+S3_BUCKET = "<your_s3_bucket_name>"
 S3_KEY = "CloudLabs.csv"
 MEMORY_ID = os.getenv("BEDROCK_AGENTCORE_MEMORY_ID")
 REGION = os.getenv("AWS_REGION")
 MODEL_ID = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
 
-def load_labs():
-    """Load labs from local file or S3 with debug prints."""
-    labs = []
 
-    # Try S3
+def load_labs():
+    """Load labs from S3 with debug prints."""
+    labs = []
     print(f"Trying S3 bucket: {S3_BUCKET}/{S3_KEY}")
     try:
         s3_client = boto3.client("s3", region_name=REGION)
@@ -82,12 +81,16 @@ def invoke(payload, context):
         user_prompt = payload.get("prompt", "")
         print(f"User prompt: {user_prompt}")
 
+        # 🔥 NEW: get toggle from frontend (default True)
+        use_memory = payload.get("use_memory", True)
+        print(f"Memory enabled: {use_memory}")
+
         actor_id = "cloudlab-user"
         session_id = getattr(context, 'session_id', 'default')
 
-        # Memory setup
+        # Memory setup (conditional)
         session_manager = None
-        if MEMORY_ID:
+        if MEMORY_ID and use_memory:
             print("Initializing memory manager...")
             try:
                 memory_config = AgentCoreMemoryConfig(
@@ -103,6 +106,8 @@ def invoke(payload, context):
             except Exception as e:
                 print(f"⚠️ Memory setup failed: {e}")
                 traceback.print_exc()
+        else:
+            print("🚫 Memory disabled for this request")
 
         # Code interpreter
         print("Initializing code interpreter...")
@@ -121,7 +126,7 @@ def invoke(payload, context):
         context_info = ""
         if recommended:
             for lab in recommended:
-                name = lab.get("Name") # Name,Link,Summary,Lab Description
+                name = lab.get("Name")
                 url = lab.get("Link")
                 context_info += f"- [{name}]({url})({lab.get('Summary')})\n"
 
