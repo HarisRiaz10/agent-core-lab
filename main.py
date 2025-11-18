@@ -20,7 +20,7 @@ S3_BUCKET = "<your_s3_bucket_name>"
 S3_KEY = "CloudLabs.csv"
 MEMORY_ID = os.getenv("BEDROCK_AGENTCORE_MEMORY_ID")
 REGION = os.getenv("AWS_REGION")
-MODEL_ID = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+MODEL_ID = "us.anthropic.claude-3-5-haiku-20241022-v1:0"
 
 
 def load_labs():
